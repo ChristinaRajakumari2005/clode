@@ -1,0 +1,16 @@
+[project]
+name = "ai-governance-compliance-copilot-backend"
+version = "0.1.0"
+description = "FastAPI backend scaffold for AI Governance & Compliance Copilot."
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi==0.116.1",
+  "uvicorn[standard]==0.35.0",
+  "pydantic-settings==2.11.0",
+  "httpx>=0.27.0",
+  "pytest>=8.0.0",
+]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"

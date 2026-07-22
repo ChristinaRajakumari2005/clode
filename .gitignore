@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+venv/
+.env
+.env.*
+
+# Node / Vite / React
+node_modules/
+dist/
+build/
+coverage/
+.npm/
+.eslintcache
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
