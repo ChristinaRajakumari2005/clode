@@ -4,6 +4,7 @@ export const navItems: NavItem[] = [
   { label: 'Dashboard', path: '/dashboard' },
   { label: 'Prompt Analyzer', path: '/prompt-analyzer' },
   { label: 'Response Analyzer', path: '/response-analyzer' },
+  { label: 'Compliance Engine', path: '/compliance-engine' },
   { label: 'Audit Reports', path: '/audit-reports' },
   { label: 'Settings', path: '/settings' },
 ]
