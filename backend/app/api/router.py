@@ -8,6 +8,7 @@ from app.api.routes.generate_report import router as generate_report_router
 from app.api.routes.hallucination import router as hallucination_router
 from app.api.routes.health import router as health_router
 from app.api.routes.prompt_improvement import router as prompt_improvement_router
+from app.api.routes.report_generator import router as report_generator_router
 from app.api.routes.risk_scoring import router as risk_scoring_router
 
 api_router = APIRouter()
@@ -19,5 +20,6 @@ api_router.include_router(compliance_router, tags=["Compliance"])
 api_router.include_router(risk_scoring_router, tags=["Risk Scoring"])
 api_router.include_router(prompt_improvement_router, tags=["Prompt Improvement"])
 api_router.include_router(hallucination_router, tags=["Hallucination Detection"])
+api_router.include_router(report_generator_router, tags=["Audit Reports"])
 api_router.include_router(generate_report_router, tags=["Reports"])
 
