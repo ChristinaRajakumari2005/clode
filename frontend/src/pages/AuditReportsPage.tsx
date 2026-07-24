@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { auditReports } from '../data/mockData'
 import type { AuditReport } from '../types/governance'
 import { Badge } from '../components/ui/Badge'
@@ -7,13 +7,34 @@ import { Panel } from '../components/ui/Panel'
 import { Table } from '../components/ui/Table'
 import { ReportViewerModal } from '../components/reports/ReportViewerModal'
 import { Eye, FilePlus, Filter } from 'lucide-react'
+import {
+  GENERATED_AUDIT_REPORTS_UPDATED_EVENT,
+  loadGeneratedAuditReports,
+} from '../lib/auditReportStore'
 
 export function AuditReportsPage() {
   const [selectedReport, setSelectedReport] = useState<AuditReport | null>(null)
   const [statusFilter, setStatusFilter] = useState<'All' | 'Ready' | 'Needs Review' | 'Draft'>('All')
+  const [generatedReports, setGeneratedReports] = useState<AuditReport[]>(() => loadGeneratedAuditReports())
 
-  const filteredReports = auditReports.filter(
-    (rep) => statusFilter === 'All' || rep.status === statusFilter
+  useEffect(() => {
+    const refreshReports = () => setGeneratedReports(loadGeneratedAuditReports())
+
+    window.addEventListener(GENERATED_AUDIT_REPORTS_UPDATED_EVENT, refreshReports)
+    window.addEventListener('storage', refreshReports)
+    return () => {
+      window.removeEventListener(GENERATED_AUDIT_REPORTS_UPDATED_EVENT, refreshReports)
+      window.removeEventListener('storage', refreshReports)
+    }
+  }, [])
+
+  const allReports = useMemo(
+    () => [...generatedReports, ...auditReports],
+    [generatedReports],
+  )
+
+  const filteredReports = allReports.filter(
+    (rep) => statusFilter === 'All' || rep.status === statusFilter,
   )
 
   const rows = filteredReports.map((report) => [
@@ -45,7 +66,7 @@ export function AuditReportsPage() {
             Export-ready governance snapshots, regulatory compliance evidence, and historical audit logs.
           </p>
         </div>
-        <Button onClick={() => setSelectedReport(auditReports[0])}>
+        <Button onClick={() => setSelectedReport(allReports[0] ?? null)}>
           <FilePlus size={16} className="mr-2 inline" /> Create New Report Snapshot
         </Button>
       </header>
@@ -80,4 +101,3 @@ export function AuditReportsPage() {
     </div>
   )
 }
-

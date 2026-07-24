@@ -3,6 +3,10 @@ import { Badge } from '../components/ui/Badge'
 import { Button } from '../components/ui/Button'
 import { Panel } from '../components/ui/Panel'
 import { ShieldCheck, ShieldAlert, Sparkles, Filter } from 'lucide-react'
+import {
+  mapAuditReportFromBackend,
+  saveGeneratedAuditReport,
+} from '../lib/auditReportStore'
 
 interface Violation {
   name: string
@@ -20,6 +24,41 @@ interface AnalysisResult {
   violations: Violation[]
   risk_level: 'Low' | 'Moderate' | 'High' | 'Critical'
   mode: 'Live API' | 'Local Sandbox'
+}
+
+interface BackendComplianceViolation extends Omit<Violation, 'severity'> {
+  severity: 'low' | 'moderate' | 'high' | 'critical'
+}
+
+interface BackendComplianceResult {
+  is_compliant: boolean
+  violations: BackendComplianceViolation[]
+  risk_level: 'low' | 'moderate' | 'high' | 'critical'
+}
+
+interface GenerateAuditReportResult {
+  report_id: string
+  generated_at: string
+  overall_status: string
+  executive_summary: string
+  overall_risk_score: number
+  risk_level: string
+  recommendations: string[]
+}
+
+async function postJson<TResponse>(path: string, body: unknown): Promise<TResponse> {
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000'
+  const response = await fetch(`${apiBaseUrl}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  })
+
+  if (!response.ok) {
+    throw new Error(`Request to ${path} failed with status ${response.status}.`)
+  }
+
+  return (await response.json()) as TResponse
 }
 
 const LOCAL_POLICIES = [
@@ -217,22 +256,19 @@ export function ComplianceEnginePage() {
   const fetchAnalysis = async (text: string) => {
     setLoading(true)
     try {
-      const response = await fetch('http://127.0.0.1:8000/analyze-compliance', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: text })
+      const data = await postJson<BackendComplianceResult>('/analyze-compliance', {
+        content: text
       })
 
-      if (!response.ok) {
-        throw new Error('API server returned error code')
-      }
-
-      const data = await response.json()
+      const report = await postJson<GenerateAuditReportResult>('/generate-audit-report', {
+        compliance_analysis: data,
+      })
+      saveGeneratedAuditReport(mapAuditReportFromBackend(report))
       
       // Map API risk level labels (lowercase string vs TitleCase string)
       const mappedRisk = (data.risk_level.charAt(0).toUpperCase() + data.risk_level.slice(1)) as 'Low' | 'Moderate' | 'High' | 'Critical'
       
-      const mappedViolations = data.violations.map((v: any) => ({
+      const mappedViolations = data.violations.map((v) => ({
         ...v,
         severity: (v.severity.charAt(0).toUpperCase() + v.severity.slice(1)) as 'Low' | 'Moderate' | 'High' | 'Critical'
       }))
