@@ -24,4 +24,11 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    return Settings()
+    settings = Settings()
+
+    print("=" * 50)
+    print("GEMINI KEY LENGTH:", len(settings.gemini_api_key))
+    print("MODEL:", settings.model_name)
+    print("=" * 50)
+
+    return settings
